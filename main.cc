@@ -1,6 +1,7 @@
 #include <gtkmm.h>
 #include "songmodel.h"
 #include "lyricedit.h"
+#include "melodyedit.h"
 
 
 class MainWindow:public Gtk::Window {
@@ -12,15 +13,17 @@ private:
 
     Gtk::Notebook   notebook;
     LyricEditor     lyric_editor;
+    MelodyEditor    melody_editor;
 };
 
 
-MainWindow::MainWindow():lyric_editor(song)
+MainWindow::MainWindow():lyric_editor(song), melody_editor(song)
 {
     set_default_size(960, 640);
 
     add(notebook);
     notebook.append_page(lyric_editor, "Lyrics");
+    notebook.append_page(melody_editor, "Melody");
 
     show_all_children();
 }

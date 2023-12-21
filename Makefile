@@ -1,4 +1,4 @@
-OBJS=main.o songmodel.o lyricedit.o
+OBJS=main.o songmodel.o lyricedit.o melodyedit.o
 
 lycalist: $(OBJS)
 	g++ -o lycalist $(OBJS) `pkg-config gtkmm-3.0 --libs`
