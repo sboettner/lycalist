@@ -283,6 +283,8 @@ bool LyricEditor::on_motion_notify_event(GdkEventMotion* event)
 
 bool LyricEditor::on_button_press_event(GdkEventButton* event)
 {
+    grab_focus();
+    
     selected_syllable=highlighted_syllable;
     cursorpos=highlighted_syllable ? highlighted_syllable->text.length() : 0;
 
@@ -293,12 +295,14 @@ bool LyricEditor::on_button_press_event(GdkEventButton* event)
         int time=col + row*beatsperline*beatsubdivisions;
         int index=song.find_index_before_time(time);
 
+        selected_syllable=new Syllable;
+
         if (index==song.length()) {
-            song.insert(index, TimePoint(time, new Syllable));
+            song.insert(index, TimePoint(time, selected_syllable));
             song.insert(index+1, TimePoint(time+default_syllable_duration, nullptr));
         }
         else {
-            song.insert(index++, TimePoint(time, new Syllable));
+            song.insert(index++, TimePoint(time, selected_syllable));
             
             if (index==song.length() || song[index].time>time+default_syllable_duration)
                 song.insert(index, TimePoint(time+default_syllable_duration, nullptr));
