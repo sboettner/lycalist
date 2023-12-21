@@ -3,7 +3,7 @@
 #include "lyricedit.h"
 
 
-LyricEditor::LyricEditor()
+LyricEditor::LyricEditor(Song& song):song(song)
 {
     set_has_window(true);
 	set_can_focus(true);

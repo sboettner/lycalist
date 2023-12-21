@@ -4,7 +4,7 @@ struct Syllable;
 
 class LyricEditor:public Gtk::Widget {
 public:
-    LyricEditor();
+    LyricEditor(Song&);
 
 protected:
     void get_preferred_width_vfunc(int& minimum_width, int& natural_width) const override;
@@ -30,7 +30,7 @@ private:
     Glib::RefPtr<Gdk::Window> m_refGdkWindow;
 	GtkIMContext*	im_context;
 
-    Song        song;
+    Song&       song;
 
     Syllable*   selected_syllable=nullptr;
     Syllable*   highlighted_syllable=nullptr;

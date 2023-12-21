@@ -8,15 +8,19 @@ public:
     MainWindow();
 
 private:
-    LyricEditor lyric_editor;
+    Song            song;
+
+    Gtk::Notebook   notebook;
+    LyricEditor     lyric_editor;
 };
 
 
-MainWindow::MainWindow()
+MainWindow::MainWindow():lyric_editor(song)
 {
     set_default_size(960, 640);
 
-    add(lyric_editor);
+    add(notebook);
+    notebook.append_page(lyric_editor, "Lyrics");
 
     show_all_children();
 }
