@@ -1,10 +1,5 @@
 #include <gtkmm.h>
-
-
-struct Syllable {
-	Glib::ustring	text;
-};
-
+#include "songmodel.h"
 
 class LyricEditor:public Gtk::Widget {
 public:
@@ -31,19 +26,10 @@ private:
     static void draw_syllable_box_open_right(const Cairo::RefPtr<Cairo::Context>& cr, int x, int y, int w, int h);
     static void draw_syllable_box_open_left(const Cairo::RefPtr<Cairo::Context>& cr, int x, int y, int w, int h);
 
-    int find_syllable_index(Syllable*);
-
     Glib::RefPtr<Gdk::Window> m_refGdkWindow;
 	GtkIMContext*	im_context;
 
-    struct TimePoint {
-        int         time;
-        Syllable*   syllable;
-
-        TimePoint(int time, Syllable* syl):time(time), syllable(syl) {}
-    };
-
-    std::vector<TimePoint> syllables;
+    Song        song;
 
     Syllable*   selected_syllable=nullptr;
     Syllable*   highlighted_syllable=nullptr;
@@ -74,10 +60,10 @@ LyricEditor::LyricEditor()
 	im_context=gtk_im_context_simple_new();
 	g_signal_connect(im_context, "commit", G_CALLBACK(commit_input), this);
 
-    syllables.emplace_back(6, new Syllable);
-    syllables.emplace_back(30, nullptr);
-    syllables.emplace_back(80, new Syllable);
-    syllables.emplace_back(120, nullptr);
+    /*song.emplace_back(6, new Syllable);
+    song.emplace_back(30, nullptr);
+    song.emplace_back(80, new Syllable);
+    song.emplace_back(120, nullptr);*/
 }
 
 
@@ -225,15 +211,15 @@ bool LyricEditor::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
 
     const int ncolumns=beatsperline*beatsubdivisions;
 
-    for (int i=0;i+1<syllables.size();i++) {
-        Syllable* syl=syllables[i].syllable;
+    for (int i=0;i+1<song.length();i++) {
+        Syllable* syl=song[i].syllable;
         if (!syl) continue;
 
-        int column=syllables[i].time % ncolumns;
-        int row   =syllables[i].time / ncolumns;
+        int column=song[i].time % ncolumns;
+        int row   =song[i].time / ncolumns;
 
-        int columnend=syllables[i+1].time % ncolumns;
-        int rowend   =syllables[i+1].time / ncolumns;
+        int columnend=song[i+1].time % ncolumns;
+        int rowend   =song[i+1].time / ncolumns;
 
         bool highlight=selected_syllable ? syl==selected_syllable : highlighted_syllable ? syl==highlighted_syllable : false;
 
@@ -302,14 +288,14 @@ bool LyricEditor::on_motion_notify_event(GdkEventMotion* event)
     int time=col + row*beatsperline*beatsubdivisions;
 
 	if (event->state & Gdk::BUTTON1_MASK) {
-		if (curitem>0 && syllables[curitem-1].time>time)
-			time=syllables[curitem-1].time;
+		if (curitem>0 && song[curitem-1].time>time)
+			time=song[curitem-1].time;
 
-		if (curitem+1<syllables.size() && syllables[curitem+1].time<time)
-			time=syllables[curitem+1].time;
+		if (curitem+1<song.length() && song[curitem+1].time<time)
+			time=song[curitem+1].time;
 
-		if (curitem>=0 && syllables[curitem].time!=time) {
-			syllables[curitem].time=time;
+		if (curitem>=0 && song[curitem].time!=time) {
+			song[curitem].time=time;
 			queue_draw();
 		}
 
@@ -318,11 +304,11 @@ bool LyricEditor::on_motion_notify_event(GdkEventMotion* event)
 
     Syllable* new_highlighted_syllable=nullptr;
 
-    for (int i=0;i<syllables.size();i++) {
-        if (i+1<syllables.size() && time>=syllables[i].time && time<syllables[i+1].time)
-            new_highlighted_syllable=syllables[i].syllable;
+    for (int i=0;i<song.length();i++) {
+        if (i+1<song.length() && time>=song[i].time && time<song[i+1].time)
+            new_highlighted_syllable=song[i].syllable;
 
-        if (syllables[i].time!=time) continue;
+        if (song[i].time!=time) continue;
 
         curitem=i;
 
@@ -364,29 +350,29 @@ bool LyricEditor::on_key_press_event(GdkEventKey* event)
         if (selected_syllable) {
             if (event->state & GDK_CONTROL_MASK) {
                 // reduce syllable duration to half
-                int index=find_syllable_index(selected_syllable);
-                int duration=syllables[index+1].time - syllables[index].time;
+                int index=song.find(selected_syllable);
+                int duration=song[index+1].time - song[index].time;
 
                 duration/=2;
 
-                if (syllables[index+1].syllable)
-                    syllables.insert(syllables.begin()+index+1, TimePoint(syllables[index].time + duration, nullptr));
+                if (song[index+1].syllable)
+                    song.insert(index+1, TimePoint(song[index].time + duration, nullptr));
                 else
-                    syllables[index+1].time=syllables[index].time + duration;
+                    song[index+1].time=song[index].time + duration;
             }
             else if (cursorpos>0)
                 selected_syllable->text.erase(--cursorpos, 1);
-            else if (int index=find_syllable_index(selected_syllable); index>0 && syllables[index-1].syllable) {
-                cursorpos=syllables[index-1].syllable->text.length();
-                syllables[index-1].syllable->text.append(selected_syllable->text);
+            else if (int index=song.find(selected_syllable); index>0 && song[index-1].syllable) {
+                cursorpos=song[index-1].syllable->text.length();
+                song[index-1].syllable->text.append(selected_syllable->text);
 
                 delete selected_syllable;
-                syllables[index].syllable=nullptr;
+                song[index].syllable=nullptr;
 
-                if (!syllables[index+1].syllable)
-                    syllables.erase(syllables.begin()+index+1);
+                if (!song[index+1].syllable)
+                    song.remove(index+1);
 
-                selected_syllable=highlighted_syllable=syllables[index-1].syllable;
+                selected_syllable=highlighted_syllable=song[index-1].syllable;
             }
 
             queue_draw();
@@ -395,14 +381,14 @@ bool LyricEditor::on_key_press_event(GdkEventKey* event)
     case GDK_KEY_Delete:
         if (event->state & GDK_CONTROL_MASK) {
             // delete entire syllable
-            int index=find_syllable_index(selected_syllable);
+            int index=song.find(selected_syllable);
             if (index<0) return true;
 
             delete selected_syllable;
-            syllables[index].syllable=nullptr;
+            song[index].syllable=nullptr;
 
-            if (!syllables[index+1].syllable)
-                syllables.erase(syllables.begin()+index+1);
+            if (!song[index+1].syllable)
+                song.remove(index+1);
 
             selected_syllable=highlighted_syllable=nullptr;
             cursorpos=0;
@@ -431,20 +417,20 @@ bool LyricEditor::on_key_press_event(GdkEventKey* event)
         return true;
     case GDK_KEY_Tab:
         if (selected_syllable) {
-            for (int i=0;i<syllables.size();i++) {
-                if (syllables[i].syllable!=selected_syllable) continue;
+            for (int i=0;i<song.length();i++) {
+                if (song[i].syllable!=selected_syllable) continue;
 
                 if (event->state & GDK_CONTROL_MASK) {
-                    if (i-1>=0 && syllables[i-1].syllable)
-                        selected_syllable=syllables[i-1].syllable;
-                    else if (i-2>=0 && syllables[i-2].syllable)
-                        selected_syllable=syllables[i-2].syllable;
+                    if (i-1>=0 && song[i-1].syllable)
+                        selected_syllable=song[i-1].syllable;
+                    else if (i-2>=0 && song[i-2].syllable)
+                        selected_syllable=song[i-2].syllable;
                 }
                 else {
-                    if (i+1<syllables.size() && syllables[i+1].syllable)
-                        selected_syllable=syllables[i+1].syllable;
-                    else if (i+2<syllables.size() && syllables[i+2].syllable)
-                        selected_syllable=syllables[i+2].syllable;
+                    if (i+1<song.length() && song[i+1].syllable)
+                        selected_syllable=song[i+1].syllable;
+                    else if (i+2<song.length() && song[i+2].syllable)
+                        selected_syllable=song[i+2].syllable;
                 }
 
                 cursorpos=selected_syllable->text.length();
@@ -465,31 +451,31 @@ void LyricEditor::on_input(const gchar* chr)
     if (!selected_syllable) return;
 
     if (cursorpos==selected_syllable->text.length() && (!strcmp(chr, " ") || !strcmp(chr, "-"))) {
-        int index=find_syllable_index(selected_syllable);
+        int index=song.find(selected_syllable);
 
-        if (index==syllables.size()) return;    // shouldn't happen
+        if (index==song.length()) return;    // shouldn't happen
 
-        if (!cursorpos && !syllables[index+1].syllable) {
-            if (index+2==syllables.size() || syllables[index+1].time+default_syllable_duration<syllables[index+2].time) {
-                syllables[index].time+=default_syllable_duration;
-                syllables[index+1].time+=default_syllable_duration;
+        if (!cursorpos && !song[index+1].syllable) {
+            if (index+2==song.length() || song[index+1].time+default_syllable_duration<song[index+2].time) {
+                song[index].time+=default_syllable_duration;
+                song[index+1].time+=default_syllable_duration;
             }
         }
         else {
             if (*chr=='-')
                 selected_syllable->text.append(chr);
 
-            if (syllables[index+1].syllable) {
+            if (song[index+1].syllable) {
             }
             else {
-                int endtime=syllables[index+1].time + default_syllable_duration;
-                if (index+2<syllables.size() && endtime>syllables[index+2].time)
-                    endtime=syllables[index+2].time;
+                int endtime=song[index+1].time + default_syllable_duration;
+                if (index+2<song.length() && endtime>song[index+2].time)
+                    endtime=song[index+2].time;
 
-                syllables[index+1].syllable=selected_syllable=new Syllable;
+                song[index+1].syllable=selected_syllable=new Syllable;
                 cursorpos=0;
 
-                syllables.insert(syllables.begin()+index+2, TimePoint(endtime, nullptr));
+                song.insert(index+2, TimePoint(endtime, nullptr));
             }
         }
     }
@@ -505,18 +491,6 @@ void LyricEditor::on_input(const gchar* chr)
 void LyricEditor::commit_input(GtkIMContext* imctx, const gchar* chr, gpointer editorptr)
 {
 	reinterpret_cast<LyricEditor*>(editorptr)->on_input(chr);
-}
-
-
-int LyricEditor::find_syllable_index(Syllable* syl)
-{
-    if (!syl) return -1;
-
-    int index=0;
-    while (index<syllables.size() && syllables[index].syllable!=syl)
-        index++;
-    
-    return index==syllables.size() ? -1 : index;
 }
 
 
