@@ -23,3 +23,13 @@ int Song::find(const Syllable* syl) const
     
     return index==syllables.size() ? -1 : index;
 }
+
+
+int Song::find_index_before_time(int time) const
+{
+    int index=0;
+
+    while (index<syllables.size() && syllables[index].time<=time) index++;
+
+    return index;
+}

@@ -337,6 +337,25 @@ bool LyricEditor::on_button_press_event(GdkEventButton* event)
     selected_syllable=highlighted_syllable;
     cursorpos=highlighted_syllable ? highlighted_syllable->text.length() : 0;
 
+    if (event->type==GDK_DOUBLE_BUTTON_PRESS && !selected_syllable) {
+        int col=(int(event->x) - borderx) / scalex;
+        int row=(int(event->y) - bordery) / scaley;
+
+        int time=col + row*beatsperline*beatsubdivisions;
+        int index=song.find_index_before_time(time);
+
+        if (index==song.length()) {
+            song.insert(index, TimePoint(time, new Syllable));
+            song.insert(index+1, TimePoint(time+default_syllable_duration, nullptr));
+        }
+        else {
+            song.insert(index++, TimePoint(time, new Syllable));
+            
+            if (index==song.length() || song[index].time>time+default_syllable_duration)
+                song.insert(index, TimePoint(time+default_syllable_duration, nullptr));
+        }
+    }
+
     queue_draw();
 
     return true;
