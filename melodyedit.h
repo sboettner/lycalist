@@ -23,5 +23,7 @@ private:
     Glib::RefPtr<Gdk::Window> m_refGdkWindow;
 
     Song&       song;
+
+    int         scalex=8;
 };
 

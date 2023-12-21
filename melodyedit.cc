@@ -103,6 +103,27 @@ bool MelodyEditor::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
 	allocation.get_x(), allocation.get_y(),
 	allocation.get_width(), allocation.get_height());
 
+	cr->set_line_width(1.0);
+
+    for (int i=0;i<song.length();i++) {
+        int x=song[i].time * scalex;
+
+        cr->move_to(x+0.5, 0);
+        cr->line_to(x+0.5, allocation.get_height());
+
+        Gdk::Cairo::set_source_rgba(cr, Gdk::RGBA("#808080"));
+        cr->stroke();
+
+        Syllable* syl=song[i].syllable;
+        if (!syl) continue;
+
+		auto layout=create_pango_layout(syl->text);
+		
+		cr->move_to(x + 4, 4);
+		layout->show_in_cairo_context(cr);
+
+    }
+
     return true;
 }
 
