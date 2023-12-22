@@ -11,6 +11,8 @@ public:
     {
         return !(get_display_offset_for_note(note)&1);
     }
+
+    Glib::ustring get_note_name(int note) const;
 };
 
 
@@ -32,6 +34,8 @@ public:
     {
         return notes.find(uint8_t(note%12))!=notes.npos;
     }
+
+    Glib::ustring get_name(const Scale&) const;
 
 private:
     int                         root;

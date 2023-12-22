@@ -133,10 +133,14 @@ bool MelodyEditor::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
 
         Gdk::Cairo::set_source_rgba(cr, Gdk::RGBA("#808080"));
 
-		auto layout=create_pango_layout(syl->text);
-		
+        auto chord_layout=create_pango_layout(syl->chord.get_name(scale));
 		cr->move_to(x + 4, 4);
-		layout->show_in_cairo_context(cr);
+		chord_layout->show_in_cairo_context(cr);
+
+		auto text_layout=create_pango_layout(syl->text);
+		cr->move_to(x + 4, 28);
+		text_layout->show_in_cairo_context(cr);
+       
 
         Gdk::Cairo::set_source_rgba(cr, Gdk::RGBA("#181818"));
         for (uint8_t note: syl->chord) {

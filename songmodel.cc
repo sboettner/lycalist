@@ -21,6 +21,13 @@ int Scale::get_note_for_display_offset(int offset) const
 }
 
 
+Glib::ustring Scale::get_note_name(int note) const
+{
+    static const char* notenames[]={ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+    return Glib::ustring(notenames[note]);
+}
+
+
 Chord::Chord()
 {
     root=0;
@@ -29,6 +36,14 @@ Chord::Chord()
     notes.append(1, (uint8_t) 0);
     notes.append(1, (uint8_t) 4);
     notes.append(1, (uint8_t) 7);
+}
+
+
+Glib::ustring Chord::get_name(const Scale& scale) const
+{
+    Glib::ustring name=scale.get_note_name(root);
+    name.append("maj");
+    return name;
 }
 
 
