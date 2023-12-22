@@ -21,6 +21,17 @@ int Scale::get_note_for_display_offset(int offset) const
 }
 
 
+Chord::Chord()
+{
+    root=0;
+
+    // major chord, tentatively
+    notes.append(1, (uint8_t) 0);
+    notes.append(1, (uint8_t) 4);
+    notes.append(1, (uint8_t) 7);
+}
+
+
 Song::Song()
 {
     syllables.emplace_back(12, new Syllable);

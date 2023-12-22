@@ -6,11 +6,42 @@ class Scale {
 public:
     int get_display_offset_for_note(int note) const;
     int get_note_for_display_offset(int offset) const;
+
+    int has_note(int note) const
+    {
+        return !(get_display_offset_for_note(note)&1);
+    }
+};
+
+
+class Chord {
+public:
+    Chord();
+
+    auto begin() const
+    {
+        return notes.begin();
+    }
+
+    auto end() const
+    {
+        return notes.end();
+    }
+
+    bool has_note(int note) const
+    {
+        return notes.find(uint8_t(note%12))!=notes.npos;
+    }
+
+private:
+    int                         root;
+    std::basic_string<uint8_t>  notes;
 };
 
 
 struct Syllable {
 	Glib::ustring	text;
+    Chord           chord;
     int             note=12;
 };
 

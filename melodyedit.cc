@@ -138,10 +138,23 @@ bool MelodyEditor::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
 		cr->move_to(x + 4, 4);
 		layout->show_in_cairo_context(cr);
 
+        Gdk::Cairo::set_source_rgba(cr, Gdk::RGBA("#181818"));
+        for (uint8_t note: syl->chord) {
+            for (int noteoffs=scale.get_display_offset_for_note(note);noteoffs<64;noteoffs+=14) {
+                cr->rectangle(x, 575.5-(noteoffs+2)*scaley/2, (song[i+1].time-song[i].time)*scalex, scaley);
+                cr->fill();
+            }
+        }
+
         if (syl->note>=0) {
             const int noteoffs=scale.get_display_offset_for_note(syl->note);
 
-            Gdk::Cairo::set_source_rgba(cr, (noteoffs&1) ? Gdk::RGBA("#ff2020") : Gdk::RGBA("#20ff20"));
+            if (syl->chord.has_note(syl->note))
+                Gdk::Cairo::set_source_rgba(cr, Gdk::RGBA("#20ff20"));
+            else if (scale.has_note(syl->note))
+                Gdk::Cairo::set_source_rgba(cr, Gdk::RGBA("#ffff20"));
+            else
+                Gdk::Cairo::set_source_rgba(cr, Gdk::RGBA("#ff2020"));
 
             cr->rectangle(x, 575.5-(noteoffs+2)*scaley/2, (song[i+1].time-song[i].time)*scalex, scaley);
             cr->fill();
