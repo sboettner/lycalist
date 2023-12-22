@@ -3,6 +3,7 @@
 
 struct Syllable {
 	Glib::ustring	text;
+    int             note=12;
 };
 
 
@@ -41,7 +42,7 @@ struct TimePoint {
 class Song {
 public:
     Song();
-    
+
     TimePoint& operator[](int i)
     {
         return syllables[i];

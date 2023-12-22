@@ -24,6 +24,10 @@ private:
 
     Song&       song;
 
+    Syllable*   highlighted_syllable=nullptr;
+    int         highlighted_note=-1;
+
     int         scalex=8;
+    int         scaley=16;
 };
 
