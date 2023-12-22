@@ -97,6 +97,8 @@ bool MelodyEditor::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
 {
 	const Gtk::Allocation allocation = get_allocation();
 	auto refStyleContext = get_style_context();
+    
+    const Scale& scale=song.get_scale();
 
 	// paint the background
 	refStyleContext->render_background(cr,
@@ -108,7 +110,7 @@ bool MelodyEditor::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
     for (int i=0;i+1<song.length();i++) {
         if (!song[i].syllable) continue;
 
-        Gdk::Cairo::set_source_rgba(cr, Gdk::RGBA("#404040"));
+        Gdk::Cairo::set_source_rgba(cr, Gdk::RGBA("#282828"));
 
         cr->rectangle(song[i].time*scalex+1, 0, (song[i+1].time-song[i].time)*scalex-2, allocation.get_height());
         cr->fill();
@@ -137,9 +139,11 @@ bool MelodyEditor::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
 		layout->show_in_cairo_context(cr);
 
         if (syl->note>=0) {
-            Gdk::Cairo::set_source_rgba(cr, Gdk::RGBA("#ff2020"));
+            const int noteoffs=scale.get_display_offset_for_note(syl->note);
 
-            cr->rectangle(x, 575.5-(syl->note+1)*scaley, (song[i+1].time-song[i].time)*scalex, scaley);
+            Gdk::Cairo::set_source_rgba(cr, (noteoffs&1) ? Gdk::RGBA("#ff2020") : Gdk::RGBA("#20ff20"));
+
+            cr->rectangle(x, 575.5-(noteoffs+2)*scaley/2, (song[i+1].time-song[i].time)*scalex, scaley);
             cr->fill();
         }
     }
@@ -152,10 +156,15 @@ bool MelodyEditor::on_motion_notify_event(GdkEventMotion* event)
 {
     int time=event->x/scalex;
     int index=song.find_index_before_time(time);
-    int note=(576-event->y)/scaley;
+
+    int noteoffs;
+    if (event->state & GDK_SHIFT_MASK)
+        noteoffs=(576-int(event->y)-scaley/2)/scaley*2 + 1;
+    else
+        noteoffs=(576-int(event->y))/scaley*2;
 
     highlighted_syllable=index<1 ? nullptr : song[index-1].syllable;
-    highlighted_note=note;
+    highlighted_note=song.get_scale().get_note_for_display_offset(noteoffs);
 
     return true;
 }

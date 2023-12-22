@@ -1,6 +1,14 @@
 #include <vector>
 #include <glibmm.h>
 
+
+class Scale {
+public:
+    int get_display_offset_for_note(int note) const;
+    int get_note_for_display_offset(int offset) const;
+};
+
+
 struct Syllable {
 	Glib::ustring	text;
     int             note=12;
@@ -43,6 +51,11 @@ class Song {
 public:
     Song();
 
+    const Scale& get_scale() const
+    {
+        return scale;
+    }
+
     TimePoint& operator[](int i)
     {
         return syllables[i];
@@ -61,5 +74,6 @@ public:
     int find_index_before_time(int time) const;
 
 private:
+    Scale                   scale;
     std::vector<TimePoint>  syllables;
 };
