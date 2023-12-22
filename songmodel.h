@@ -40,6 +40,8 @@ struct TimePoint {
 
 class Song {
 public:
+    Song();
+    
     TimePoint& operator[](int i)
     {
         return syllables[i];
