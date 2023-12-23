@@ -1,6 +1,7 @@
 #include <gtkmm.h>
 #include "songmodel.h"
 #include "melodyedit.h"
+#include "chordchooser.h"
 
 
 MelodyEditor::MelodyEditor(Song& song):song(song)
@@ -189,10 +190,26 @@ bool MelodyEditor::on_motion_notify_event(GdkEventMotion* event)
 
 bool MelodyEditor::on_button_press_event(GdkEventButton* event)
 {
-    if (highlighted_syllable) {
-        highlighted_syllable->note=highlighted_note;
-        queue_draw();
+    if (!highlighted_syllable) return false;
+
+    if (event->y<28) {
+        int index=song.find(highlighted_syllable);
+
+        auto* chordchooser=new ChordChooser(*this, song.get_scale());
+        chordchooser->set_pointing_to(
+            Gdk::Rectangle(
+                song[index].time*scalex,
+                0,
+                (song[index+1].time-song[index].time)*scalex,
+                28
+        ));
+        chordchooser->popup();
+
+        return true;
     }
+
+    highlighted_syllable->note=highlighted_note;
+    queue_draw();
 
     return true;
 }
