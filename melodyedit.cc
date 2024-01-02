@@ -195,7 +195,7 @@ bool MelodyEditor::on_button_press_event(GdkEventButton* event)
     if (event->y<28) {
         int index=song.find(highlighted_syllable);
 
-        auto* chordchooser=new ChordChooser(*this, song.get_scale());
+        auto* chordchooser=new ChordChooser(*this, song.get_scale(), highlighted_syllable->chord);
         chordchooser->set_pointing_to(
             Gdk::Rectangle(
                 song[index].time*scalex,
@@ -203,7 +203,7 @@ bool MelodyEditor::on_button_press_event(GdkEventButton* event)
                 (song[index+1].time-song[index].time)*scalex,
                 28
         ));
-        chordchooser->popup();
+        chordchooser->show();
 
         return true;
     }

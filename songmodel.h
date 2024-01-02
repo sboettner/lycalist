@@ -35,6 +35,8 @@ public:
         return notes.find(uint8_t(note%12))!=notes.npos;
     }
 
+    void set_root(int);
+
     Glib::ustring get_name(const Scale&) const;
 
 private:

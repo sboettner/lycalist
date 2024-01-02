@@ -47,6 +47,18 @@ Glib::ustring Chord::get_name(const Scale& scale) const
 }
 
 
+void Chord::set_root(int r)
+{
+    root=r;
+
+    // major chord, tentatively
+    notes.clear();
+    notes.append(1, (uint8_t) r);
+    notes.append(1, (uint8_t) ((r+4)%12));
+    notes.append(1, (uint8_t) ((r+7)%12));
+}
+
+
 Song::Song()
 {
     syllables.emplace_back(12, new Syllable);
