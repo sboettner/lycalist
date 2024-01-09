@@ -31,18 +31,16 @@ Glib::ustring Scale::get_note_name(int note) const
 Chord::Chord()
 {
     root=0;
-
-    // major chord, tentatively
-    notes.append(1, (uint8_t) 0);
-    notes.append(1, (uint8_t) 4);
-    notes.append(1, (uint8_t) 7);
+    update();
 }
 
 
 Glib::ustring Chord::get_name(const Scale& scale) const
 {
+    const static char* qualitysuffix[]={ "", "m", "6", "m6", "maj7", "min7", "7", "sus2", "sus4", "dim" };
+
     Glib::ustring name=scale.get_note_name(root);
-    name.append("maj");
+    name.append(qualitysuffix[int(quality)]);
     return name;
 }
 
@@ -50,12 +48,37 @@ Glib::ustring Chord::get_name(const Scale& scale) const
 void Chord::set_root(int r)
 {
     root=r;
+    update();
+}
 
-    // major chord, tentatively
+
+void Chord::set_quality(Quality q)
+{
+    quality=q;
+    update();
+}
+
+
+void Chord::update()
+{
+    const static int8_t qualitynotes[10][4]={
+        { 0, 4, 7, -1 },    // major
+        { 0, 3, 7, -1 },    // minor
+        { 0, 4, 7, 9 },     // major6
+        { 0, 3, 7, 9 },     // minor6
+        { 0, 4, 7, 11 },    // major7
+        { 0, 3, 7, 10 },    // minor7
+        { 0, 4, 7, 10 },    // dominant7
+        { 0, 2, 7, -1 },    // sus2
+        { 0, 5, 7, -1 },    // sus4
+        { 0, 3, 6, -1 }     // diminished
+    };
+
     notes.clear();
-    notes.append(1, (uint8_t) r);
-    notes.append(1, (uint8_t) ((r+4)%12));
-    notes.append(1, (uint8_t) ((r+7)%12));
+    for (int8_t i: qualitynotes[int(quality)]) {
+        if (i<0) break;
+        notes.append(1, (uint8_t) ((root+i)%12));
+    }
 }
 
 

@@ -21,6 +21,10 @@ ChordChooser::ChordChooser(const Gtk::Widget& parent, const Scale& scale, Chord&
         Gtk::RadioButton* b=new Gtk::RadioButton(romannumeral[offs]);
         b->set_group(rootgroup);
         b->set_mode(false);
+        
+        if (chord.get_root()==i)
+            b->set_active(true);
+
         b->signal_toggled().connect([this, b, i]() {
             if (b->get_active()) {
                 this->chord.set_root(i);
@@ -35,6 +39,14 @@ ChordChooser::ChordChooser(const Gtk::Widget& parent, const Scale& scale, Chord&
         Gtk::RadioButton* b=new Gtk::RadioButton(qualitynames[i]);
         b->set_group(qualgroup);
         b->set_mode(false);
+
+        if (chord.get_quality()==Chord::Quality(i))
+            b->set_active(true);
+
+        b->signal_toggled().connect([this, b, i]() {
+            if (b->get_active())
+                this->chord.set_quality(Chord::Quality(i));
+        });
         qualflow.insert(*b, i);
     }
 

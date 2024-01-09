@@ -18,6 +18,19 @@ public:
 
 class Chord {
 public:
+    enum class Quality {
+        Major,
+        Minor,
+        Major6,
+        Minor6,
+        Major7,
+        Minor7,
+        Dominant7,
+        Sus2,
+        Sus4,
+        Diminished
+    };
+
     Chord();
 
     auto begin() const
@@ -35,13 +48,29 @@ public:
         return notes.find(uint8_t(note%12))!=notes.npos;
     }
 
+    int get_root() const
+    {
+        return root;
+    }
+
     void set_root(int);
+
+    Quality get_quality() const
+    {
+        return quality;
+    }
+
+    void set_quality(Quality);
 
     Glib::ustring get_name(const Scale&) const;
 
 private:
-    int                         root;
+    int                         root=0;
+    Quality                     quality=Quality::Major;
+
     std::basic_string<uint8_t>  notes;
+
+    void update();
 };
 
 
